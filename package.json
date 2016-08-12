@@ -1,6 +1,6 @@
 {
   "name": "page-slicer",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Minimal pagination class",
   "main": "page-slicer.js",
   "scripts": {
@@ -11,6 +11,14 @@
     "pager",
     "pagination"
   ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/makepost/page-slicer.git"
+  },
   "author": "makepost <makepost@firemail.cc>",
-  "license": "MIT"
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/makepost/page-slicer/issues"
+  },
+  "homepage": "https://github.com/makepost/page-slicer#readme"
 }
