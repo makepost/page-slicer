@@ -1,0 +1,16 @@
+{
+  "name": "page-slicer",
+  "version": "1.0.0",
+  "description": "Minimal pagination class",
+  "main": "page-slicer.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "page",
+    "pager",
+    "pagination"
+  ],
+  "author": "makepost <makepost@firemail.cc>",
+  "license": "MIT"
+}
