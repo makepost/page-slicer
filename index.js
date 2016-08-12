@@ -1,13 +1,29 @@
 $(document).ready(function () {
   'use strict';
 
-  var AcmePagination = {
+  var AcmePages = {
     controller: function (props) {
-      var itemsOnPage = props.itemsOnPage || 1;
-      var pager = new window.pageSlicer.PageSlicer({ itemsOnPage: itemsOnPage }, props.items);
+      var pager = new window.pageSlicer.PageSlicer(typeof props.itemsOnPage === 'undefined' ? {} : {
+        itemsOnPage: props.itemsOnPage,
+      }, props.items);
+
+      var zoomer = new window.pageSlicer.ItemZoomer({}, window.pageSlicer.Range(pager.count()));
+      window.zoomer = zoomer;
+
+      function handleInput(ev) {
+        var value = ev.target.value;
+
+        if (!pager.isValid(value)) {
+          return;
+        }
+
+        pager.go(Number(value));
+      }
 
       return {
+        handleInput: handleInput,
         pager: pager,
+        zoomer: zoomer,
       };
     },
 
@@ -16,17 +32,17 @@ $(document).ready(function () {
       var count = pager.count();
       var state = pager.state;
 
-      var btn = 'button.acme-btn.acme-btn--pagination-';
-      var formControl = 'input.acme-form-control.acme-form-control--pagination-';
+      var btn = 'button.acme-btn.acme-btn--pages-';
+      var formControl = 'input.acme-form-control.acme-form-control--pages.acme-form-control--pages-';
 
       return (
-        m('.acme-pagination', [
+        m('.acme-pages', [
           m('p', 'count: ' + count),
           m('p', 'slice: ' + pager.slice()),
           m('p', [
             m(btn + 'first', { disabled: state === -count, onclick: pager.goFirst }, 'goFirst'),
             m(btn + 'prev', { disabled: state === 0 || state === -count, onclick: pager.goPrev }, 'goPrev'),
-            m(formControl + 'state', { max: count - 1, min: -count, oninput: handleInput, type: 'number', value: state }),
+            m(formControl + 'state', { max: count - 1, min: -count, oninput: ctrl.handleInput, type: 'number', value: state }),
             m(btn + 'next', { disabled: state === -1 || state === count - 1, onclick: pager.goNext }, 'goNext'),
             m(btn + 'last', { disabled: state === count - 1, onclick: pager.goLast }, 'goLast'),
           ]),
@@ -34,51 +50,27 @@ $(document).ready(function () {
             m(btn + 'minus-one', { disabled: state === -1, onclick: pager.goMinusOne }, 'goMinusOne'),
             m(btn + 'zero', { disabled: state === 0, onclick: pager.goZero }, 'goZero'),
           ]),
+          m('p', [
+            ctrl.zoomer.zoom(state >= 0 ? state : count + state).map(function (x) {
+              if (x === null) return m(btn + 'spacer', '...');
+              if (state < 0) x -= count;
+              return m(btn + x, { disabled: state === x, onclick: pager.go.bind(null, x) }, x);
+            }),
+          ]),
         ])
       );
     },
   };
 
-  function handleInput(ev) {
-    var value = ev.target.value;
-
-    if (!pager.isValid(value)) {
-      return;
-    }
-
-    pager.go(Number(value));
-  }
-
   var array = 'abcdefghijklmnopqrstuvwxyz'.split('');
-
-  var dataSource = {
-    length: 1024 * 1024 * 1024 * 1024,
-
-    slice: function (start, end) {
-      var result = [];
-
-      if (start < 0 || end <= start) {
-        return result;
-      }
-
-      if (end > this.length) {
-        end = this.length;
-      }
-
-      for (var i = start; i < end; i++) {
-        result.push(i);
-      }
-
-      return result;
-    },
-  };
+  var dataSource = window.pageSlicer.Range(1024 * 1024 * 1024 * 1024);
 
   m.mount(document.getElementById('app'), {
     view: function () {
       return m('div', [
-        m(AcmePagination, { items: array, itemsOnPage: 5 }),
+        m(AcmePages, { items: array, itemsOnPage: 5 }),
         m('hr'),
-        m(AcmePagination, { items: dataSource }),
+        m(AcmePages, { items: dataSource }),
       ]);
     },
   });

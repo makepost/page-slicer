@@ -1,6 +1,53 @@
-window.pageSlicer = (function () {
+(function () {
+  var itemZoomerDefaults = {
+    padding: 1,
+    spacer: null,
+  };
+
+  function ItemZoomer(config, items) {
+    var _this = this;
+
+    _this.config = Object.assign({}, itemZoomerDefaults, config);
+    _this.zoom = zoom;
+
+    function zoom(current) {
+      var padding = _this.config.padding;
+      var spacer = _this.config.spacer;
+
+      var len = items.length;
+      var z = len - 1;
+
+      if (current < 0 || current > z) {
+        return [];
+      }
+
+      var x = 1 + padding + 1;
+      var y = x + padding + 1;
+
+      if (z <= y + 1) {
+        return items.slice();
+      }
+
+      if (current <= x) {
+        return [].concat(items.slice(0, y), spacer, items.slice(z));
+      }
+
+      if (current >= z - x) {
+        return [].concat(items.slice(0, 1), spacer, items.slice(len - y));
+      }
+
+      return [].concat(items.slice(0, 1), spacer, items.slice(current - padding, current + padding + 1), spacer, items.slice(z));
+    }
+  }
+
+  var pageSlicerDefaults = {
+    itemsOnPage: 1,
+  };
+
   function PageSlicer(config, items) {
     var _this = this;
+
+    _this.config = Object.assign({}, pageSlicerDefaults, config);
     _this.listeners = [];
     _this.state = 0;
 
@@ -19,12 +66,12 @@ window.pageSlicer = (function () {
     _this.unsubscribe = unsubscribe;
 
     function count() {
-      return Math.ceil(items.length / config.itemsOnPage);
+      return Math.ceil(items.length / _this.config.itemsOnPage);
     }
 
     function slice() {
       var n = _this.state;
-      var itemsOnPage = config.itemsOnPage;
+      var itemsOnPage = _this.config.itemsOnPage;
 
       if (n < 0) {
         var start = items.length + n * itemsOnPage;
@@ -108,7 +155,45 @@ window.pageSlicer = (function () {
     }
   }
 
-  return {
+  function Range(length) {
+    return {
+      length: length,
+
+      slice: function (start, end) {
+        var result = [];
+
+        if (typeof start === 'undefined') {
+          start = 0;
+        }
+
+        if (typeof end === 'undefined' || end > this.length) {
+          end = this.length;
+        }
+
+        if (start < 0 || end <= start) {
+          return result;
+        }
+
+        for (var i = start; i < end; i++) {
+          result.push(i);
+        }
+
+        return result;
+      },
+    };
+  }
+
+  var pageSlicer = {
+    ItemZoomer: ItemZoomer,
+    itemZoomerDefaults: itemZoomerDefaults,
     PageSlicer: PageSlicer,
+    pageSlicerDefaults: pageSlicerDefaults,
+    Range: Range,
   };
+
+  if (typeof window === 'undefined') {
+    module.exports = pageSlicer;
+  } else {
+    window.pageSlicer = pageSlicer;
+  }
 })();
