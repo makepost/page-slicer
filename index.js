@@ -1,8 +1,43 @@
 $(document).ready(function () {
   'use strict';
 
-  var items = 'abcdefghijklmnopqrstuvwxyz'.split('');
-  var pager = new window.pageSlicer.PageSlicer({ itemsOnPage: 5 }, items);
+  var AcmePagination = {
+    controller: function (props) {
+      var itemsOnPage = props.itemsOnPage || 1;
+      var pager = new window.pageSlicer.PageSlicer({ itemsOnPage: itemsOnPage }, props.items);
+
+      return {
+        pager: pager,
+      };
+    },
+
+    view: function (ctrl, props) {
+      var pager = ctrl.pager;
+      var count = pager.count();
+      var state = pager.state;
+
+      var btn = 'button.acme-btn.acme-btn--pagination-';
+      var formControl = 'input.acme-form-control.acme-form-control--pagination-';
+
+      return (
+        m('.acme-pagination', [
+          m('p', 'count: ' + count),
+          m('p', 'slice: ' + pager.slice()),
+          m('p', [
+            m(btn + 'first', { disabled: state === -count, onclick: pager.goFirst }, 'goFirst'),
+            m(btn + 'prev', { disabled: state === 0 || state === -count, onclick: pager.goPrev }, 'goPrev'),
+            m(formControl + 'state', { max: count - 1, min: -count, oninput: handleInput, type: 'number', value: state }),
+            m(btn + 'next', { disabled: state === -1 || state === count - 1, onclick: pager.goNext }, 'goNext'),
+            m(btn + 'last', { disabled: state === count - 1, onclick: pager.goLast }, 'goLast'),
+          ]),
+          m('p', [
+            m(btn + 'minus-one', { disabled: state === -1, onclick: pager.goMinusOne }, 'goMinusOne'),
+            m(btn + 'zero', { disabled: state === 0, onclick: pager.goZero }, 'goZero'),
+          ]),
+        ])
+      );
+    },
+  };
 
   function handleInput(ev) {
     var value = ev.target.value;
@@ -14,28 +49,37 @@ $(document).ready(function () {
     pager.go(Number(value));
   }
 
+  var array = 'abcdefghijklmnopqrstuvwxyz'.split('');
+
+  var dataSource = {
+    length: 1024 * 1024 * 1024 * 1024,
+
+    slice: function (start, end) {
+      var result = [];
+
+      if (start < 0 || end <= start) {
+        return result;
+      }
+
+      if (end > this.length) {
+        end = this.length;
+      }
+
+      for (var i = start; i < end; i++) {
+        result.push(i);
+      }
+
+      return result;
+    },
+  };
+
   m.mount(document.getElementById('app'), {
     view: function () {
-      var count = pager.count();
-      var state = pager.state;
-      return (
-        m('div', [
-          m('p', 'items: ' + items.join('')),
-          m('p', 'count: ' + count),
-          m('p', 'slice: ' + pager.slice().join('')),
-          m('p', [
-            m('button', { disabled: state === -count, onclick: pager.goFirst }, 'goFirst'),
-            m('button', { disabled: state === 0 || state === -count, onclick: pager.goPrev }, 'goPrev'),
-            m('input[type="number"]', { max: count - 1, min: -count, oninput: handleInput, value: state }),
-            m('button', { disabled: state === -1 || state === count - 1, onclick: pager.goNext }, 'goNext'),
-            m('button', { disabled: state === count - 1, onclick: pager.goLast }, 'goLast'),
-          ]),
-          m('p', [
-            m('button', { disabled: state === -1, onclick: pager.goMinusOne }, 'goMinusOne'),
-            m('button', { disabled: state === 0, onclick: pager.goZero }, 'goZero'),
-          ]),
-        ])
-      );
+      return m('div', [
+        m(AcmePagination, { items: array, itemsOnPage: 5 }),
+        m('hr'),
+        m(AcmePagination, { items: dataSource }),
+      ]);
     },
   });
 });

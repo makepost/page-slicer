@@ -33,4 +33,4 @@ console.log([
 }));
 ```
 
-See [index.html](index.html) and [index.js](index.js) for another example.
+See [index.html](index.html) and [index.js](index.js) for a [mithril](http://mithril.js.org/) pagination boilerplate.
