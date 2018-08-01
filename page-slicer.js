@@ -191,9 +191,11 @@
     Range: Range,
   };
 
-  if (typeof window === 'undefined') {
+  if (typeof module !== 'undefined') {
     module.exports = pageSlicer;
-  } else {
+  }
+
+  if (typeof window !== 'undefined') {
     window.pageSlicer = pageSlicer;
   }
 })();
